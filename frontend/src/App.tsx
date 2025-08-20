@@ -61,6 +61,18 @@ const ProtectedRoute = ({ user }: { user: User | null }) => {
 
 const queryClient = new QueryClient();
 
+const RoleRoute = ({
+  user,
+  roles,
+}: {
+  user: User | null;
+  roles: User["role"][];
+}) => {
+  if (!user) return <Navigate to="/login" replace />;
+  if (!roles.includes(user.role)) return <Navigate to="/" replace />;
+  return <Outlet />;
+};
+
 const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [checking, setChecking] = useState(true);
@@ -152,7 +164,11 @@ const App = () => {
               element={<Misc />}
             />
 
-            <Route path="/faculty" element={<Faculty />} />
+            {/* Admin-only block */}
+            <Route element={<RoleRoute user={user} roles={["admin"]} />}>
+              <Route path="/faculty" element={<Faculty />} />
+            </Route>
+
             <Route path="/school/admission" element={<SchoolAdmission />} />
             <Route path="/school/examination" element={<SchoolExamination />} />
             <Route

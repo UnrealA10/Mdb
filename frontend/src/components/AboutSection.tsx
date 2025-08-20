@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import mdbLogo from "@/assets/logo.jpg";
+import mdbLogo from "/lovable-uploads/logo.jpg";
 
 const AboutSection = () => {
   return (

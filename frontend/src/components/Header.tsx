@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Globe, LogOut, User } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, ChevronDown, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,23 +9,37 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import logo from "/lovable-uploads/dae80b83-df7f-4657-b0c0-c12d54185616.png";
-import axios from "axios";
+import logo from "/lovable-uploads/logo.jpg";
 
-interface User {
+interface UserShape {
   loggedIn: boolean;
   username: string;
   role: string;
 }
 
 interface HeaderProps {
-  user: User | null;
+  user: UserShape | null;
   setUser: (user: null) => void;
 }
 
 const Header = ({ user, setUser }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Always derive "logged in" + "display name" from either React state OR localStorage.
+  const isLoggedIn = useMemo(
+    () => Boolean(user?.loggedIn || localStorage.getItem("token")),
+    [user]
+  );
+  const displayName = useMemo(
+    () => user?.username || localStorage.getItem("username") || "Account",
+    [user]
+  );
+  const role = useMemo(
+    () => user?.role || (localStorage.getItem("role") as string) || "guest",
+    [user]
+  );
 
   const navItems = [
     {
@@ -50,6 +64,7 @@ const Header = ({ user, setUser }: HeaderProps) => {
     },
     {
       name: "Student Services",
+      roles: ["student", "teacher", "guest", "admin"],
       children: [
         {
           name: "Miscellaneous Application Forms",
@@ -92,6 +107,7 @@ const Header = ({ user, setUser }: HeaderProps) => {
     { name: "Faculty", href: "/faculty", roles: ["teacher", "admin"] },
     {
       name: "School",
+      roles: ["guest", "teacher", "admin"],
       children: [
         {
           name: "School Admission",
@@ -104,7 +120,6 @@ const Header = ({ user, setUser }: HeaderProps) => {
           roles: ["teacher", "admin"],
         },
       ],
-      roles: ["guest", "teacher", "admin"],
     },
     {
       name: "Contact",
@@ -113,31 +128,25 @@ const Header = ({ user, setUser }: HeaderProps) => {
     },
   ];
 
-  const handleLogout = async () => {
-    try {
-      await axios.post(
-        "/logout",
-        {},
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      localStorage.removeItem("token");
-      setUser(null);
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
+  const handleLogout = () => {
+    // No backend route needed; JWT is stateless. Just clear and navigate.
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("role");
+    setUser(null);
+    navigate("/login");
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-soft">
-      <div className="bg-forest-green text-primary-foreground py-2 text-center text-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-soft">
+      <div className="bg-forest-green text-primary-foreground py-2 text-center text-xs md:text-sm">
         MDB Senior Secondary School Sagra Sunderpur, Pratapgarh, Uttar Pradesh,
         India, 230136
       </div>
 
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
+          {/* Mobile menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon" className="text-foreground">
@@ -145,56 +154,45 @@ const Header = ({ user, setUser }: HeaderProps) => {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-80">
-              <div className="flex flex-col space-y-4 mt-8">
-                {navItems.map(
-                  (item) =>
-                    (item.roles?.includes(user?.role || "guest") ||
-                      !item.roles) && (
-                      <div key={item.name}>
-                        {item.href ? (
-                          item.href.startsWith("#") ? (
-                            <a
-                              href={item.href}
-                              className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                              onClick={() => setIsOpen(false)}
-                            >
-                              {item.name}
-                            </a>
-                          ) : (
-                            <Link
-                              to={item.href}
-                              className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                              onClick={() => setIsOpen(false)}
-                            >
-                              {item.name}
-                            </Link>
-                          )
-                        ) : (
-                          <div className="text-lg font-medium text-foreground">
-                            {item.name}
-                          </div>
-                        )}
-                        {item.children &&
-                          item.children
-                            .filter(
-                              (subItem) =>
-                                subItem.roles?.includes(
-                                  user?.role || "guest"
-                                ) || !subItem.roles
-                            )
-                            .map((subItem) => (
-                              <Link
-                                key={`${item.name}-${subItem.name}`}
-                                to={subItem.href}
-                                className="text-md font-medium text-muted-foreground hover:text-primary transition-colors pl-4"
-                                onClick={() => setIsOpen(false)}
-                              >
-                                {subItem.name}
-                              </Link>
-                            ))}
-                      </div>
-                    )
-                )}
+              <div className="flex items-center gap-3 mt-2">
+                <img src={logo} alt="MDB" className="h-8 w-8 rounded" />
+                <div className="font-semibold">MDB Senior Secondary School</div>
+              </div>
+              <div className="flex flex-col space-y-3 mt-6">
+                {navItems.map((item) => {
+                  const allowed = item.roles?.includes(role) || !item.roles;
+                  if (!allowed) return null;
+                  return (
+                    <div key={item.name}>
+                      {item.href ? (
+                        <Link
+                          to={item.href}
+                          className="text-base font-medium text-foreground hover:text-primary transition-colors"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {item.name}
+                        </Link>
+                      ) : (
+                        <div className="text-base font-medium text-foreground">
+                          {item.name}
+                        </div>
+                      )}
+                      {item.children
+                        ?.filter((c) => c.roles?.includes(role) || !c.roles)
+                        .map((sub) => (
+                          <Link
+                            key={`${item.name}-${sub.name}`}
+                            to={sub.href}
+                            className="block text-sm text-muted-foreground hover:text-primary pl-4 mt-1"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            {sub.name}
+                          </Link>
+                        ))}
+                    </div>
+                  );
+                })}
+
                 <div className="pt-4 border-t border-border">
                   <Link to="/admissions" onClick={() => setIsOpen(false)}>
                     <Button variant="outline" className="w-full mb-2">
@@ -206,7 +204,8 @@ const Header = ({ user, setUser }: HeaderProps) => {
                       Downloads
                     </Button>
                   </Link>
-                  {user ? (
+
+                  {isLoggedIn ? (
                     <Button
                       variant="outline"
                       className="w-full mt-2"
@@ -226,13 +225,17 @@ const Header = ({ user, setUser }: HeaderProps) => {
             </SheetContent>
           </Sheet>
 
-          {/* Logo */}
+          {/* Logo (center on mobile, left on desktop) */}
           <Link
             to="/"
             className="flex-1 flex justify-center md:justify-start md:ml-8"
           >
             <div className="flex items-center">
-              <img src={logo} alt="MDB Logo" className="h-10 w-10 mr-3" />
+              <img
+                src={logo}
+                alt="MDB Logo"
+                className="h-10 w-10 mr-3 rounded"
+              />
               <div className="hidden md:block">
                 <div className="text-lg font-bold text-foreground">
                   MDB Senior Secondary School
@@ -244,76 +247,66 @@ const Header = ({ user, setUser }: HeaderProps) => {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {navItems.map(
-              (item) =>
-                (item.roles?.includes(user?.role || "guest") || !item.roles) &&
-                (item.children ? (
+            {navItems.map((item) => {
+              const allowed = item.roles?.includes(role) || !item.roles;
+              if (!allowed) return null;
+
+              if (item.children) {
+                return (
                   <DropdownMenu key={item.name}>
                     <DropdownMenuTrigger className="flex items-center text-sm font-medium text-foreground hover:text-primary transition-colors relative group">
                       {item.name}
                       <ChevronDown className="ml-1 h-4 w-4" />
-                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       {item.children
-                        .filter(
-                          (subItem) =>
-                            subItem.roles?.includes(user?.role || "guest") ||
-                            !subItem.roles
-                        )
-                        .map((subItem) => (
-                          <DropdownMenuItem
-                            key={`${item.name}-${subItem.name}`}
-                          >
+                        .filter((c) => c.roles?.includes(role) || !c.roles)
+                        .map((sub) => (
+                          <DropdownMenuItem key={`${item.name}-${sub.name}`}>
                             <Link
-                              to={subItem.href}
+                              to={sub.href}
                               className={`w-full ${
-                                location.pathname === subItem.href
+                                location.pathname === sub.href
                                   ? "text-primary"
                                   : "text-foreground hover:text-primary"
                               }`}
                             >
-                              {subItem.name}
+                              {sub.name}
                             </Link>
                           </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                ) : item.href.startsWith("#") ? (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className="text-sm font-medium text-foreground hover:text-primary transition-colors relative group"
-                  >
-                    {item.name}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-                  </a>
-                ) : (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`text-sm font-medium transition-colors relative group ${
+                );
+              }
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`text-sm font-medium transition-colors relative group ${
+                    location.pathname === item.href
+                      ? "text-primary"
+                      : "text-foreground hover:text-primary"
+                  }`}
+                >
+                  {item.name}
+                  <span
+                    className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${
                       location.pathname === item.href
-                        ? "text-primary"
-                        : "text-foreground hover:text-primary"
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
                     }`}
-                  >
-                    {item.name}
-                    <span
-                      className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${
-                        location.pathname === item.href
-                          ? "w-full"
-                          : "w-0 group-hover:w-full"
-                      }`}
-                    ></span>
-                  </Link>
-                ))
-            )}
+                  />
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* CTA Buttons */}
+          {/* Right actions */}
           <div className="hidden md:flex items-center space-x-2 ml-8">
             <Link to="/admissions">
               <Button
@@ -333,7 +326,8 @@ const Header = ({ user, setUser }: HeaderProps) => {
                 DOWNLOADS
               </Button>
             </Link>
-            {user ? (
+
+            {isLoggedIn ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -342,11 +336,19 @@ const Header = ({ user, setUser }: HeaderProps) => {
                     className="text-foreground border-border"
                   >
                     <User className="h-4 w-4 mr-2" />
-                    {user.username}
+                    {displayName}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={handleLogout}>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      localStorage.removeItem("token");
+                      localStorage.removeItem("username");
+                      localStorage.removeItem("role");
+                      setUser(null);
+                      navigate("/login", { replace: true });
+                    }}
+                  >
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </DropdownMenuItem>

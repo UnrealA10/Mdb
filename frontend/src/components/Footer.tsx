@@ -1,6 +1,6 @@
 import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logo from "/lovable-uploads/dae80b83-df7f-4657-b0c0-c12d54185616.png";
+import logo from "/lovable-uploads/logo.jpg";
 
 const Footer = () => {
   const quickLinks = [
@@ -42,7 +42,7 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-sm opacity-90 mb-6 leading-relaxed">
-              Taleem, Tarbiyat Aur Taqwa Ka Sangam - Nurturing students with academic excellence, 
+              Taleem, Tarbiyat Aur Taqwa Ka Sangam - Nurturing students with academic excellence,
               moral strength, and spiritual consciousness for a brighter future.
             </p>
             <div className="space-y-3">
@@ -70,8 +70,8 @@ const Footer = () => {
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.name}>
-                  <a 
-                    href={link.href} 
+                  <a
+                    href={link.href}
                     className="text-sm opacity-90 hover:opacity-100 hover:text-golden-sand transition-all duration-200"
                   >
                     {link.name}
@@ -87,8 +87,8 @@ const Footer = () => {
             <ul className="space-y-3">
               {resources.map((resource) => (
                 <li key={resource.name}>
-                  <a 
-                    href={resource.href} 
+                  <a
+                    href={resource.href}
                     className="text-sm opacity-90 hover:opacity-100 hover:text-golden-sand transition-all duration-200"
                   >
                     {resource.name}
@@ -105,16 +105,16 @@ const Footer = () => {
               Subscribe to our newsletter for updates and news.
             </p>
             <div className="space-y-3 mb-6">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
+              <input
+                type="email"
+                placeholder="Enter your email"
                 className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-golden-sand"
               />
               <Button className="w-full bg-golden-sand text-earth-brown hover:bg-golden-sand/90">
                 Subscribe
               </Button>
             </div>
-            
+
             {/* Social Media */}
             <div className="flex space-x-4">
               {socialLinks.map((social) => (

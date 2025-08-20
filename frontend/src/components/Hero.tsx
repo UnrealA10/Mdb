@@ -1,12 +1,12 @@
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import heroImage from "@/assets/hero-school.jpg";
+import heroImage from "/lovable-uploads/hero-school.jpg";
 
 const Hero = () => {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
@@ -20,21 +20,21 @@ const Hero = () => {
             Excellence in Education
             <span className="block text-golden-sand">Since 1999</span>
           </h1>
-          
+
           <p className="text-lg md:text-xl lg:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed opacity-90">
-            Taleem, Tarbiyat Aur Taqwa Ka Sangam - A confluence of education, morality, and God-consciousness. 
+            Taleem, Tarbiyat Aur Taqwa Ka Sangam - A confluence of education, morality, and God-consciousness.
             We nurture students with academic excellence, moral strength, and spiritual consciousness.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-golden-sand text-earth-brown hover:bg-golden-sand/90 font-semibold px-8 py-6 text-lg"
             >
               Explore Admissions
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="lg"
               className="border-white text-white hover:bg-white hover:text-earth-brown font-semibold px-8 py-6 text-lg"
             >

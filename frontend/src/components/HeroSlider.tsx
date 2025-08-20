@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import mdbLogo from "@/assets/logo.jpg";
+import mdbLogo from "/lovable-uploads/logo.jpg";
 
 const HeroSlider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
