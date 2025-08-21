@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ASB India Design System - Warm Educational Colors */
-
 @layer base {
   :root {
     --background: 45 25% 97%;
